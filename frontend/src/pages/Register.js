@@ -1,0 +1,68 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { authAPI } from '../services/api';
+
+function Register() {
+  const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await authAPI.register(form);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('username', res.data.username);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>💰 FinTracker</h2>
+        <p>Create your account</p>
+        {error && <div className="error">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={form.username}
+            onChange={(e) => setForm({...form, username: e.target.value})}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) => setForm({...form, email: e.target.value})}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) => setForm({...form, password: e.target.value})}
+            required
+          />
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Creating account...' : 'Register'}
+          </button>
+        </form>
+        <p style={{marginTop: '20px', textAlign: 'center', fontSize: '14px'}}>
+          Already have an account?{' '}
+          <Link to="/login" style={{color: '#4f8ef7'}}>Sign In</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default Register;
